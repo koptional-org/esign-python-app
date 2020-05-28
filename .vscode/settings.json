@@ -1,0 +1,11 @@
+{
+    "python.pythonPath": "venv/bin/python",
+    "python.autoComplete.extraPaths": [
+        "venv/lib/python3.6/site-packages"
+    ],
+    // "python.jediEnabled": true,
+    "window.zoomLevel": -1,
+    "[python]": {
+
+    },
+}
