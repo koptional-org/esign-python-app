@@ -107,3 +107,11 @@ def add_project():
     except:
         return "Error"
     return redirect(url_for('home'))
+
+
+@app.route("/projects/<int:project_id>")
+def edit_project(project_id):
+    # not sure what's supposed to be in here yet need to figure out how to reference specific project
+    if not session.get('logged_in'):
+        return redirect("/login")
+    return redirect("/home/active")
