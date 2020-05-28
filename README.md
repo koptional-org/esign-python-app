@@ -21,6 +21,13 @@ Finally install requirements:
 pip3 install -r requirements.txt
 ```
 
+### Migrating the database
+
+```bash
+rm -f flaskr.db
+python migrate.py
+```
+
 ## Running the app
 
 ### If the address is already in use, change the port to something else like 5002

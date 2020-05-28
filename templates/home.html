@@ -23,13 +23,18 @@
         <a class="navbar-brand" href="/home">
             Project Manager
         </a>
-        <form method="GET" action="/login" class="form-inline">
+        <form method="GET" action="/logout" class="form-inline">
             <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">Logout</button>
         </form>
     </nav>
     <div class="container">
 
         <div class="card card-body mt-4">
+            <div class="text-center">
+                <button data-toggle="modal" data-target="#newProjectModal" class="btn btn-info">Add A Project</button>
+            </div>
+
+
             <ul class="nav nav-tabs">
                 {% if type == "active" %}
                 <li class="nav-item">
@@ -49,32 +54,38 @@
 
             </ul>
 
-
             <!-- <p class="text-center text-muted my-2"> You don't have any projects right now, create one! </p> -->
 
             <div class="p-4">
                 <ul class="list-group">
+                    {% for entry in entries %}
                     <li class="list-group-item">
-                        <div class="d-flex flex-column">
+                        <div class="d-flex flex-row">
                             <div class="flex-grow-1">
-                                <p>Ongoing <b>milestone</b> project with Mike Smith (<a
-                                        href="mailto:mikesmith@gmail.com">mikesmith@gmail.com</a>) <br> <span
-                                        class="quote"> Quoted at
-                                        $950.00</span> </p>
+                                {{ entry[0] }}
+                                <p>{{ 'Complete' if entry['is_complete'] == 1 else 'Ongoing' }}
+                                    <b>{{entry['contract_type']}}</b> project with {{ entry['contact_name']}} (<a
+                                        href="mailto:{{ entry['contact_email']}}">{{ entry['contact_email']}}</a>) <br>
+                                    <span class="quote"> Quoted at
+                                        ${{ entry['quote_dollars'] }}.00</span> </p>
 
 
                             </div>
                             <div class="controls">
-
+                                <button class="btn btn-outline-secondary">
+                                    Mark {{ 'Complete' if entry['is_complete'] == 0 else 'Ongoing' }}
+                                </button>
+                                <button class="btn btn-outline-danger">
+                                    Mark Delete
+                                </button>
                             </div>
 
                         </div>
                     </li>
-                </ul>
-            </div>
+                    {% endfor %}
 
-            <div class="text-center">
-                <button data-toggle="modal" data-target="#newProjectModal" class="btn btn-info">Add A Project</button>
+
+                </ul>
             </div>
 
 
@@ -100,22 +111,22 @@
                 </div>
                 <div class="modal-body">
                     <!-- New project form -->
-                    <form>
+                    <form method="POST" action="/projects">
                         <div class="form-group">
                             <label for="contactEmailInput">Contact Email</label>
-                            <input required type="email" class="form-control" id="contactEmailInput"
-                                placeholder="name@example.com">
+                            <input name="contact_email" required type="email" class="form-control"
+                                id="contactEmailInput" placeholder="name@example.com">
                         </div>
 
                         <div class="form-group">
-                            <label for="contactName">Contact Name</label>
-                            <input required type="text" class="form-control" id="contactName">
+                            <label name="contact_name" for="contactName">Contact Name</label>
+                            <input name="contact_name" required type="text" class="form-control" id="contactName">
                         </div>
 
 
                         <div class="form-group">
                             <label for="projectTypeSelect">Project Type</label>
-                            <select required class="form-control" id="projectTypeSelect">
+                            <select name="contract_type" required class="form-control" id="projectTypeSelect">
                                 <option value="milestone" selected>Milestone</option>
                                 <option value="hourly">Hourly</option>
                             </select>
@@ -128,8 +139,8 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">$</span>
                                 </div>
-                                <input required id="projectQuoteInput" type="text" class="form-control"
-                                    aria-label="Amount (to the nearest dollar)">
+                                <input name="quote_dollars" required id="projectQuoteInput" type="number" step="1"
+                                    class="form-control" aria-label="Amount (to the nearest dollar)">
                                 <div class="input-group-append">
                                     <span class="input-group-text">.00</span>
                                 </div>
@@ -138,7 +149,8 @@
 
 
                         <div class="form-check">
-                            <input class="form-check-input" value="" type="checkbox" id="projectIsComplete">
+                            <input name="is_complete" class="form-check-input" value="1" type="checkbox"
+                                id="projectIsComplete">
                             <label class="form-check-label" for="projectIsComplete">
                                 This project is complete
                             </label>
