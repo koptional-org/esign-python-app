@@ -109,9 +109,15 @@ def add_project():
     return redirect(url_for('home'))
 
 
-@app.route("/projects/<int:project_id>")
+@app.route("/home/projects/<int:project_id>")
 def edit_project(project_id):
     # not sure what's supposed to be in here yet need to figure out how to reference specific project
     if not session.get('logged_in'):
         return redirect("/login")
-    return redirect("/home/active")
+    try:
+        db = get_db()
+        # want curr to hold the information for a project
+        curr = db.execute("select * from projects where id='%d'" % project_id)
+        return render_template('edit_form.html')
+    except:
+        return "Error"

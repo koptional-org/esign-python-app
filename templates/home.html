@@ -66,6 +66,7 @@
                                 <p>{{ 'Complete' if entry['is_complete'] == 1 else 'Ongoing' }}
                                     <b>{{entry['contract_type']}}</b> project with {{ entry['contact_name']}} (<a
                                         href="mailto:{{ entry['contact_email']}}">{{ entry['contact_email']}}</a>) <br>
+
                                     <span class="quote"> Quoted at
                                         ${{ entry['quote_dollars'] }}.00</span> </p>
 
@@ -77,6 +78,9 @@
                                 </button>
                                 <button class="btn btn-outline-danger">
                                     Mark Delete
+                                </button>
+                                <button class="btn btn-outline-secondary">
+                                    <a href="projects/{{entry['id']}}">Edit Project</a>
                                 </button>
                             </div>
 
