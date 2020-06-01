@@ -109,15 +109,37 @@ def add_project():
     return redirect(url_for('home'))
 
 
-@app.route("/home/projects/<int:project_id>")
-def edit_project(project_id):
-    # not sure what's supposed to be in here yet need to figure out how to reference specific project
+@app.route("/projects/edit/<int:project_id>", methods=["POST"])
+def edit_project2():
     if not session.get('logged_in'):
         return redirect("/login")
-    try:
-        db = get_db()
-        # want curr to hold the information for a project
-        curr = db.execute("select * from projects where id='%d'" % project_id)
-        return render_template('edit_form.html')
-    except:
-        return "Error"
+    # Save the information into the database
+    proj_id = project_id
+    db = get_db()
+    db.execute(
+        '''UPDATE projects SET contact_email=?, contact_name=?, contract_type=?, quote_dollars=?, is_complete=? where id=''',
+        (
+            request.form.get('contact_email', type=str),
+            request.form.get('contact_name', type=str),
+            'hourly' if request.form.get(
+                'contract_type') == "hourly" else "milestone",
+            request.form.get('quote_dollars', type=int),
+            0 if not request.form.get('is_complete') else 1,
+            proj_id
+        )
+    )
+    db.commit()
+    db.close()
+
+    return redirect(url_for('home'))
+
+
+@app.route("/home/projects/<int:project_id>")
+def edit_project(project_id):
+    if not session.get('logged_in'):
+        return redirect("/login")
+
+    db = get_db()
+    # want curr to hold the information for a project
+    cur = db.execute("select * from projects where id='%d'" % project_id)
+    return render_template('edit_form.html', project=cur, id=project_id)
