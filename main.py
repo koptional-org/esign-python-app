@@ -141,5 +141,11 @@ def edit_project(project_id):
 
     db = get_db()
     # want curr to hold the information for a project
-    cur = db.execute("select * from projects where id='%d'" % project_id)
-    return render_template('edit_form.html', project=cur, id=project_id)
+    cur = db.execute("select * from projects where id=?", (int(project_id),))
+    columns = [column[0] for column in cur.description]
+    entries = [dict(zip(columns, row)) for row in cur.fetchall()]
+
+    if len(entries) == 0:
+        return redirect('/home')
+
+    return render_template('edit_form.html', project=entries[0])
