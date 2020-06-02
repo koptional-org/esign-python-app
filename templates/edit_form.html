@@ -26,7 +26,7 @@
             <div class="card-body">
                 <!-- New project form -->
 
-                <form method="POST" action="/home/projects/{{ project['id'] }}">
+                <form method="POST" action="/projects/edit/{{ project['id'] }}">
                     <div class="form-group">
                         <label for="contactEmailInput">Contact Email</label>
                         <input value="{{ project['contact_email'] }}" name="contact_email" required type="email"

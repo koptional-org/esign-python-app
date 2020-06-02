@@ -110,14 +110,13 @@ def add_project():
 
 
 @app.route("/projects/edit/<int:project_id>", methods=["POST"])
-def edit_project2():
+def edit_project2(project_id):
     if not session.get('logged_in'):
         return redirect("/login")
     # Save the information into the database
-    proj_id = project_id
     db = get_db()
     db.execute(
-        '''UPDATE projects SET contact_email=?, contact_name=?, contract_type=?, quote_dollars=?, is_complete=? where id=''',
+        '''UPDATE projects SET contact_email=?, contact_name=?, contract_type=?, quote_dollars=?, is_complete=? where id=?''',
         (
             request.form.get('contact_email', type=str),
             request.form.get('contact_name', type=str),
@@ -125,7 +124,7 @@ def edit_project2():
                 'contract_type') == "hourly" else "milestone",
             request.form.get('quote_dollars', type=int),
             0 if not request.form.get('is_complete') else 1,
-            proj_id
+            project_id
         )
     )
     db.commit()
