@@ -1,8 +1,19 @@
 # WaiverStevie Demo Project
 
-## Getting started
+## Quickstart
 
-You'll need to create a virtualenv first thing. A virtual environment makes sure all dependencies are local to this project as opposed to installed globally in the OS; it encapsulates everything this project in particular needs
+See [flask's documentation](https://flask.palletsprojects.com/en/1.1.x/installation/#python-version) for installing flask and using a virtual environment
+
+```bash
+# See https://flask.palletsprojects.com/en/1.1.x/installation/#python-version for installing flask
+pip install -r requirements.txt
+# If you don't have flask installed see the above documentation
+export FLASK_APP=main.py; export FLASK_ENV=development; flask run
+```
+
+## Using a Virtual Environment (optional)
+
+A virtual environment makes sure all dependencies are local to this project as opposed to installed globally on the operating system; it encapsulates everything this project needs
 
 ```bash
 python3 -m venv venv
@@ -21,18 +32,6 @@ Finally install requirements:
 pip3 install -r requirements.txt
 ```
 
-### Migrating the database
+## Migrating the database
 
-```bash
-rm -f flaskr.db
-python migrate.py
-```
-
-## Running the app
-
-### If the address is already in use, change the port to something else like 5002
-
-```bash
-# keep a terminal open where this is running
-export FLASK_APP=main.py; export FLASK_ENV=development; flask run --host=0.0.0.0 --port=5001
-```
+This is done automatically when the project runs for simplicity. But

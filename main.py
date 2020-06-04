@@ -1,10 +1,16 @@
 from flask import render_template, redirect, g, Flask, request, url_for, session
 from sqlite3 import dbapi2 as sqlite3
-
+from os import path
 app = Flask(__name__)
 
 
 app.config.from_pyfile('config.py')
+
+
+# migrate
+if not path.isfile('flaskr.db'):
+    print("Run ```python migrate.py``` to create the database before running the app")
+    exit(0)
 
 
 def get_db():
@@ -14,11 +20,23 @@ def get_db():
     return db
 
 
+def cursor_to_dict_array(cur):
+    columns = [column[0] for column in cur.description]
+    return [dict(zip(columns, row)) for row in cur.fetchall()]
+
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
+
+@app.route('/', methods=["GET"])
+def base():
+    if not session.get('logged_in'):
+        return redirect("/login")
+    return redirect("/home")
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -29,23 +47,11 @@ def login():
             error = "Invalid Username"
         elif request.form['password'] != app.config['PASSWORD']:
             error = "Invalid Username"
-
         else:
             session['logged_in'] = True
             return redirect(url_for('home'))
-
     return render_template('login.html', error=error)
 
-
-# @app.route('/signup')
-# def signup():
-#     if request.method == "POST":
-#         # get body, validate signup.html
-#         signup = request.form.to_dict()
-#         if signup["password"] == signup["confirm_password"]
-
-#     else:
-#         return render_template('signup.html')
 
 @app.route('/logout')
 def logout():
@@ -62,12 +68,11 @@ def home():
 def home_active():
     if not session.get('logged_in'):
         return redirect("/login")
-
+    # load completed projects
     db = get_db()
     cur = db.execute('select * from projects where is_complete=0')
-    columns = [column[0] for column in cur.description]
-    entries = [dict(zip(columns, row)) for row in cur.fetchall()]
-
+    entries = cursor_to_dict_array(cur)
+    # render home page with completed projects
     return render_template('home.html', type="active", entries=entries)
 
 
@@ -75,12 +80,11 @@ def home_active():
 def home_completed():
     if not session.get('logged_in'):
         return redirect("/login")
-
+    # load completed projects
     db = get_db()
     cur = db.execute('select * from projects where is_complete=1')
-    columns = [column[0] for column in cur.description]
-    entries = [dict(zip(columns, row)) for row in cur.fetchall()]
-
+    entries = cursor_to_dict_array(cur)
+    # render home page with completed projects
     return render_template('home.html', type="completed", entries=entries)
 
 
@@ -88,29 +92,40 @@ def home_completed():
 def add_project():
     if not session.get('logged_in'):
         return redirect("/login")
-    # Save the information into the database
-    try:
-        db = get_db()
-        db.execute(
-            'insert into projects (contact_email,contact_name,contract_type,quote_dollars,is_complete) values (?,?,?, ?, ?)',
-            (
-                request.form.get('contact_email', type=str),
-                request.form.get('contact_name', type=str),
-                'hourly' if request.form.get(
-                    'contract_type') == "hourly" else "milestone",
-                request.form.get('quote_dollars', type=int),
-                0 if not request.form.get('is_complete') else 1
-            )
+    db = get_db()
+    db.execute(
+        'insert into projects (contact_email,contact_name,contract_type,quote_dollars,is_complete) values (?,?,?, ?, ?)',
+        (
+            request.form.get('contact_email', type=str),
+            request.form.get('contact_name', type=str),
+            'hourly' if request.form.get(
+                'contract_type') == "hourly" else "milestone",
+            request.form.get('quote_dollars', type=int),
+            0 if not request.form.get('is_complete') else 1
         )
-        db.commit()
-        db.close()
-    except:
-        return "Error"
+    )
+    db.commit()
+    db.close()
     return redirect(url_for('home'))
 
 
+@app.route("/home/projects/<int:project_id>", methods=["GET"])
+def edit_project_page(project_id):
+    if not session.get('logged_in'):
+        return redirect("/login")
+    # Load particular project
+    db = get_db()
+    cur = db.execute("select * from projects where id=?", (int(project_id),))
+    entries = cursor_to_dict_array(cur)
+    if len(entries) == 0:
+        return redirect('/home')
+
+    # Return page
+    return render_template('edit_form.html', project=entries[0])
+
+
 @app.route("/projects/edit/<int:project_id>", methods=["POST"])
-def edit_project2(project_id):
+def edit_project(project_id):
     if not session.get('logged_in'):
         return redirect("/login")
     # Save the information into the database
@@ -131,20 +146,3 @@ def edit_project2(project_id):
     db.close()
 
     return redirect(url_for('home'))
-
-
-@app.route("/home/projects/<int:project_id>")
-def edit_project(project_id):
-    if not session.get('logged_in'):
-        return redirect("/login")
-
-    db = get_db()
-    # want curr to hold the information for a project
-    cur = db.execute("select * from projects where id=?", (int(project_id),))
-    columns = [column[0] for column in cur.description]
-    entries = [dict(zip(columns, row)) for row in cur.fetchall()]
-
-    if len(entries) == 0:
-        return redirect('/home')
-
-    return render_template('edit_form.html', project=entries[0])
