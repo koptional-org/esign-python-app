@@ -7,16 +7,20 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
 
-# migrate
-if not path.isfile('flaskr.db'):
-    print("Run ```python migrate.py``` to create the database before running the app")
-    exit(0)
-
-
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
+        db_file = app.config["DATABASE"]
+        exists = path.isfile(db_file)
         db = g._database = sqlite3.connect(app.config['DATABASE'])
+        if not exists:
+            qry = open('schema.sql', 'r').read()
+            c = db.cursor()
+            c.executescript(qry)
+            db.commit()
+            c.close()
+
+    # Make sure database has tables
     return db
 
 

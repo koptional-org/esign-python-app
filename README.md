@@ -31,7 +31,3 @@ Finally install requirements:
 ```bash
 pip3 install -r requirements.txt
 ```
-
-## Migrating the database
-
-This is done automatically when the project runs for simplicity. But
