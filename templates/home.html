@@ -14,6 +14,10 @@
         .quote {
             color: green;
         }
+
+        .not-signed {
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -62,13 +66,20 @@
                     <li class="list-group-item">
                         <div class="d-flex flex-row">
                             <div class="flex-grow-1">
-                                {{ entry[0] }}
                                 <p>{{ 'Complete' if entry['is_complete'] == 1 else 'Ongoing' }}
                                     <b>{{entry['contract_type']}}</b> project with {{ entry['contact_name']}} (<a
                                         href="mailto:{{ entry['contact_email']}}">{{ entry['contact_email']}}</a>) <br>
-
                                     <span class="quote"> Quoted at
-                                        ${{ entry['quote_dollars'] }}.00</span> </p>
+                                        ${{ entry['quote_dollars'] }}.00</span> <br>
+                                    {% if not entry['signed_pdf'] %}
+                                    <span class="not-signed">
+                                        Client has not approved of contract</span>
+                                    {% else %}
+                                    <a href="{{ entry['signed_pdf'] }}"> Contract </a>
+                                    {% endif %}
+
+
+                                </p>
 
 
                             </div>
