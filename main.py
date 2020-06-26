@@ -96,16 +96,21 @@ def home_completed():
 def add_project():
     if not session.get('logged_in'):
         return redirect("/login")
+    contact_email = request.form.get('contact_email', type=str)
+    contact_name = request.form.get('contact_name', type=str)
+    quote_cost = request.form.get('quote_dollars', type=int)
+    is_complete = request.form.get('is_complete')
+
     db = get_db()
     db.execute(
         'insert into projects (contact_email,contact_name,contract_type,quote_dollars,is_complete) values (?,?,?, ?, ?)',
         (
-            request.form.get('contact_email', type=str),
-            request.form.get('contact_name', type=str),
+            contact_email,
+            contact_name,
             'hourly' if request.form.get(
                 'contract_type') == "hourly" else "milestone",
-            request.form.get('quote_dollars', type=int),
-            0 if not request.form.get('is_complete') else 1
+            quote_cost,
+            0 if not is_complete else 1
         )
     )
     db.commit()
