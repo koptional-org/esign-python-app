@@ -1,5 +1,15 @@
 # WaiverStevie Demo Project
 
+Checkout the [integration guide](https://docs.waiverstevie.com/python_waiverstevie_integration/).
+
+To see the code AFTER integrating eSign, checkout the esign branch
+
+```bash
+git checkout esign
+```
+
+Then you'll have to modify `config.py` with the appropriate environment variables (the guide will have more info).
+
 ## Quickstart
 
 See [flask's documentation](https://flask.palletsprojects.com/en/1.1.x/installation/#python-version) for installing flask and using a virtual environment
