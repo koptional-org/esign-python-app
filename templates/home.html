@@ -68,7 +68,15 @@
                                         href="mailto:{{ entry['contact_email']}}">{{ entry['contact_email']}}</a>) <br>
 
                                     <span class="quote"> Quoted at
-                                        ${{ entry['quote_dollars'] }}.00</span> </p>
+                                        ${{ entry['quote_dollars'] }}.00</span> </p><br>
+                                {% if not entry['signed_pdf'] %}
+                                <span class="not-signed">
+                                    Client has not approved of this contract.
+                                    <a href="#"> manually check for their signature. </a>
+                                </span>
+                                {% else %}
+                                <a target="_blank" href="{{ entry['signed_pdf'] }}"> Contract </a>
+                                {% endif %}
 
 
                             </div>
