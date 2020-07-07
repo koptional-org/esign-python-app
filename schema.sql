@@ -6,6 +6,6 @@ create table projects (
   'contact_name' varchar(255) not null,
   'contract_type' varchar(255) not null,
   'quote_dollars' int not null,
-  'has_signed' int DEFAULT 0,
+  'signed_pdf' int DEFAULT 0,
   'is_complete' int DEFAULT 0
 );
