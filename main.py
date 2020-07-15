@@ -1,3 +1,4 @@
+import requests
 from flask import render_template, redirect, g, Flask, request, url_for, session
 from sqlite3 import dbapi2 as sqlite3
 from os import path
@@ -96,20 +97,69 @@ def home_completed():
 def add_project():
     if not session.get('logged_in'):
         return redirect("/login")
+    contact_email = request.form.get('contact_email', type=str)
+    contact_name = request.form.get('contact_name', type=str)
+    quote_cost = request.form.get('quote_dollars', type=int)
+    is_complete = request.form.get('is_complete')
+
+    # break out first and last name if appropriate
+    name_arr = contact_name.split(" ", 1)
+    contact_first_name = name_arr[0]
+    contact_last_name = name_arr[1] if len(name_arr) > 1 else ""
+
     db = get_db()
-    db.execute(
+    cursor = db.cursor()
+    cursor.execute(
         'insert into projects (contact_email,contact_name,contract_type,quote_dollars,is_complete) values (?,?,?, ?, ?)',
         (
-            request.form.get('contact_email', type=str),
-            request.form.get('contact_name', type=str),
+            contact_email,
+            contact_name,
             'hourly' if request.form.get(
                 'contract_type') == "hourly" else "milestone",
-            request.form.get('quote_dollars', type=int),
-            0 if not request.form.get('is_complete') else 1
+            quote_cost,
+            0 if not is_complete else 1
         )
     )
+    project_id = cursor.lastrowid
     db.commit()
     db.close()
+    # Code for hitting WaiverStevie API
+    r = requests.post('https://app.waiverstevie.com/api/v2/forms/' + app.config['WS_CONTRACT_ID'] + "/envelopes?api_key=" + app.config['WS_API_KEY'], json={
+        "tags": [
+            {
+                "key": "project_id",
+                "value": str(project_id) # so we can check on this projects contract easily
+            }
+        ],
+        "signers": [
+          # Your information
+            {
+
+                "email": app.config['DEV_EMAIL'],
+                "first_name": app.config["DEV_FIRST_NAME"],
+                "last_name": app.config["DEV_LAST_NAME"],
+                "prefilled_fields": [
+                    {
+                        "label": "Cost",
+                        "value": "$" + str(quote_cost) # prefill the cost of the project
+                    }
+                ]
+            },
+            # The clients information
+            {
+                "email": contact_email,
+                "first_name": contact_first_name,
+                "last_name": contact_last_name
+            }
+        ],
+        'preset_values': [
+            {
+
+            }
+        ],
+        "send_email": True
+    })
+
     return redirect(url_for('home'))
 
 
@@ -149,4 +199,27 @@ def edit_project(project_id):
     db.commit()
     db.close()
 
+    return redirect(url_for('home'))
+
+
+@app.route("/projects/contract-check/<int:project_id>", methods=["GET"])
+def manually_check_for_signature(project_id):
+    r = requests.get("https://app.waiverstevie.com/api/v2/forms/{}/envelopes?api_key={}&tag_project_id={}".format(
+        app.config['WS_CONTRACT_ID'], app.config['WS_API_KEY'], project_id))
+    body = r.json()
+    if len(body["data"]) > 0:
+        # Update the database accordingly
+        signers = body["data"][len(body["data"]) - 1]["signers"]
+        final_pdf = signers[len(signers)-1]["signed_pdf"]
+        if final_pdf:
+            db = get_db()
+            db.execute(
+                '''UPDATE projects SET signed_pdf=? where id=?''',
+                (
+                    final_pdf,
+                    project_id
+                )
+            )
+            db.commit()
+            db.close()
     return redirect(url_for('home'))

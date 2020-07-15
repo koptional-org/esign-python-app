@@ -72,7 +72,9 @@
                                 {% if not entry['signed_pdf'] %}
                                 <span class="not-signed">
                                     Client has not approved of this contract.
-                                    <a href="#"> manually check for their signature. </a>
+                                    <a href="/projects/contract-check/{{ entry['id'] }}">
+                                        manually check for their signature.
+                                    </a>
                                 </span>
                                 {% else %}
                                 <a target="_blank" href="{{ entry['signed_pdf'] }}"> Contract </a>
