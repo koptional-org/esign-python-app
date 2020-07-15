@@ -181,9 +181,9 @@ def manually_check_for_signature(project_id):
     r = requests.get("https://app.waiverstevie.com/api/v2/forms/{}/envelopes?api_key={}&tag_project_id={}".format(
         app.config['WS_CONTRACT_ID'], app.config['WS_API_KEY'], project_id))
     body = r.json()
-    if len(body["data"]) == 1:
+    if len(body["data"]) > 0:
         # Update the database accordingly
-        signers = body["data"][0]["signers"]
+        signers = body["data"][len(body["data"]) - 1]["signers"]
         final_pdf = signers[len(signers)-1]["signed_pdf"]
         if final_pdf:
             db = get_db()
